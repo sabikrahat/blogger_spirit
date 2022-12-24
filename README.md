@@ -1,6 +1,6 @@
 # Blogger Spirit
 
-## A django project where we use mongodb & oracle database as backend.
+## A django project where we use mongodb & xampp database as backend.
 
 ### Group Members:
 - Md. Sabik Alam Rahat (Id: 2019-1-60-256)

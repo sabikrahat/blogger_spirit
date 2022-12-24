@@ -1,0 +1,26 @@
+.authenticate-bg {
+  background-image: url("../../static/images/authenticate-bg.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 100vh;
+}
+
+.square-box {
+  max-width: 600px;
+  min-width: 600px;
+}
+
+.custom-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.rounded-card {
+  border-radius: 10px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  background-color: aliceblue;
+}
