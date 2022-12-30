@@ -5,4 +5,9 @@ urlpatterns = [
     path('', views.home, name="home"),
     path('login', views.login, name="login"),
     path('register', views.register, name="register"),
+    path('logout', views.logout, name='logout'),
+    path('privacy-policy', views.privacy, name='privacy-policy'),
+    path('terms-and-conditions', views.terms, name='terms-and-conditions'),
+    path('write-post', views.writePost, name='write-post'),
+    path('transfer-point', views.transferPoint, name='transfer-point'),
 ]

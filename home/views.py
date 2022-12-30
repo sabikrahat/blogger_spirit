@@ -4,11 +4,12 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from home.models import UserModel
+from home.models import PostModel, TransferPoint, UserModel
+from django.db import transaction
 
 # Create your views here.
 
-def connection():
+def mongoDBConnect():
     # Connect to the MongoDB, change the connection string per your MongoDB environment
     client = pymongo.MongoClient('mongodb://localhost:27017/')
     print(client)
@@ -25,19 +26,15 @@ def connection():
 
 
 def home(request):
-    # isLoggedIn = False
-    # try:
-    #     if request.session['email'] is not None:
-    #         isLoggedIn = True
-    # except:
-    #     isLoggedIn = False
+    try:
+        user = UserModel.objects.get(email=request.session['email'])
+        posts = PostModel.objects.all()
+        print(posts)
+        return render(request, 'home.html', {'posts': posts, 'user': user})
+    except:
+        messages.error(request, 'You need to login first')
+        return redirect('login')
     
-    # if isLoggedIn:
-    #     return render(request, 'home.html', {'isLoggedIn': isLoggedIn})
-    # else:
-    #     redirect('login')
-        # return render(request, 'login.html')
-    return render(request, 'home.html')
 
 def login(request):
     if request.method == 'POST':
@@ -55,14 +52,13 @@ def login(request):
 
 def register(request):
     if request.method == 'POST':
-        if request.POST.get('name') and request.POST.get('email') and request.POST.get('password') and request.POST.get('phone') and request.POST.get('balance'):
+        if request.POST.get('name') and request.POST.get('email') and request.POST.get('password') and request.POST.get('phone'):
 
             userModel = UserModel()
             userModel.name = request.POST.get('name')
             userModel.email = request.POST.get('email')
             userModel.password = make_password(request.POST.get('password'))
             userModel.phone = request.POST.get('phone')
-            userModel.balance = request.POST.get('balance')
 
             if len(request.FILES) != 0:
                 userModel.img = request.FILES['image']
@@ -78,12 +74,88 @@ def register(request):
     return render(request, 'register.html')
 
 
-# def logout(request):
-#     try:
-#         del request.session['email']
-#         messages.success(request, "Successfully logged out.")
-#     except:
-#         messages.error(request, "An error occurred. Try again.")
-#         return redirect('/')
-#     return redirect('/')
+def logout(request):
+    try:
+        del request.session['email']
+        messages.success(request, "Successfully logged out.")
+    except:
+        messages.error(request, "An error occurred. Try again.")
+        return redirect('login')
+    return redirect('login')
+
+def privacy(request):
+    return render(request, 'privacy-policy.html')
+
+def terms(request):
+    return render(request, 'terms-and-conditions.html')
+
+def writePost(request):
+    try:
+        user = UserModel.objects.get(email=request.session['email'])
+        if request.method == 'POST':
+            if request.POST.get('title') and request.POST.get('description'):
+                postModel = PostModel()
+                postModel.publisherId = user.id
+                postModel.title = request.POST.get('title')
+                postModel.description = request.POST.get('description')
+
+                if len(request.FILES) != 0:
+                    postModel.img = request.FILES['image']
+                
+                try: 
+                    postModel.save()
+                except Exception as e:
+                    print(e)
+                    messages.error(request, "An error occurred. " + str(e))
+                    return render(request, 'write-post.html')
+
+                messages.success(request, "Post saved successfully...!")
+                return render(request, 'write-post.html')
+        
+        else:
+            return render(request, 'write-post.html')
+    except:
+        messages.error(request, 'You need to login first')
+        return redirect('login')
+
+
+def transferPoint(request):
+    try:
+        user = UserModel.objects.get(email=request.session['email'])
+
+        if request.method == 'POST':
+            if request.POST.get('email') and request.POST.get('point'):
+
+                with transaction.atomic():
+                    try:
+                        receiver = UserModel.objects.get(email=request.POST.get('email'))
+
+                        trasferPoint = TransferPoint()
+                        trasferPoint.senderEmail = user.email
+                        trasferPoint.receiverEmail = receiver.email
+                        trasferPoint.point = request.POST.get('point')
+
+
+                        # Action #1
+                        user.point = user.point - int(request.POST.get('point'))
+                        user.save()
+
+                        # Action #2
+                        receiver.point = receiver.point + int(request.POST.get('point'))
+                        receiver.save()
+
+                        # Action #3
+                        trasferPoint.save()
+                    except Exception as e:
+                        print(e)
+                        messages.error(request, "An error occurred. " + str(e))
+                        return render(request, 'transfer-point.html', {'user': user})
+                    messages.success(request, "Point transfered successfully...!", {'user': user})
+                    return render(request, 'transfer-point.html')
+        else:
+            return render(request, 'transfer-point.html', {'user': user})
+
+    except:
+        messages.error(request, 'You need to login first')
+        return redirect('login')
 

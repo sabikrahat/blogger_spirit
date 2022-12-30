@@ -1,0 +1,43 @@
+
+-- insert into post table
+-- 1
+DELIMITER $$ 
+CREATE TRIGGER check_user_points_while_post
+    BEFORE
+        INSERT ON app_posts 
+    FOR EACH ROW 
+    BEGIN
+        DECLARE points INT;
+        SELECT point INTO points FROM app_users WHERE id = NEW.publisherId;
+        IF points < 10 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You don''t have enough point to post';
+        END IF;
+    END $$ 
+DELIMITER ;
+
+-- 2
+DELIMITER $$ 
+CREATE TRIGGER update_user_point
+    AFTER
+        INSERT ON app_posts
+    FOR EACH ROW BEGIN
+        UPDATE app_users SET point = point - 10 WHERE id = NEW.publisherId;
+    END $$ 
+DELIMITER ;
+
+
+-- insert into transfer point table
+DELIMITER $$ 
+CREATE TRIGGER check_user_points_while_transferring
+    BEFORE
+        INSERT ON app_transfer_point 
+    FOR EACH ROW 
+    BEGIN
+        DECLARE points INT;
+        SELECT point INTO points FROM app_users WHERE email = NEW.senderEmail;
+        IF points < NEW.point THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You don''t have enough point to post';
+        END IF;
+    END $$ 
+DELIMITER ;
+

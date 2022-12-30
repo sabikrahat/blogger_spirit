@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+{% extends 'index.html' %}
+{% block title %}Privacy Policy{% endblock %}
+{% block content %}
+{% load static %}
+
+<br>
+<div class="row">
+    <div class="col-10">
+        <h1>Transfer points with your Friends</h1>
+    </div>
+    <div class="col-2">
+    </div>
+</div>
+<hr>
+{% if messages %}
+{% for result in messages %}
+{% if result.tags == "error" %}
+<div class="alert alert-danger">
+    {{ result }}
+</div>
+{% else %}
+<div class="alert alert-success">
+    {{ result }}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+<div class="container" style="padding-bottom: 40em;">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <form method="POST">
+                {% csrf_token %}
+                <br>
+                <div class="form-group">
+                    <label for="senderInputEmail">Sender Email address</label>
+                    <input type="email" class="form-control" id="senderInputEmail" aria-describedby="emailHelpSender"
+                        placeholder="Enter email" value="{{user.email}}" readonly required>
+                    <small id="emailHelpSender" class="form-text text-muted">Your email address. Automatically
+                        received!</small>
+                </div>
+                <br>
+                <div class="form-group">
+                    <label for="receiverInputEmail">Receiver Email address</label>
+                    <input type="email" class="form-control" id="receiverInputEmail" name="email"
+                        aria-describedby="emailHelpReceiver" placeholder="Enter email" required>
+                    <small id="emailHelpReceiver" class="form-text text-muted">We'll transfer the amount to that email
+                        user.</small>
+                </div>
+                <br>
+                <div class="form-group">
+                    <label for="pointInput">Points</label>
+                    <input type="number" class="form-control" id="pointInput" aria-describedby="pointHelper"
+                        placeholder="Enter points" required name="point">
+                    <small id="pointHelper" class="form-text text-muted">Points you want to transfer</small>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary">Transfer</button>
+            </form>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>
+
+
+{% endblock %}
