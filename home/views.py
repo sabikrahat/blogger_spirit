@@ -10,21 +10,6 @@ from django.db import connection
 
 # Create your views here.
 
-def mongoDBConnect():
-    # Connect to the MongoDB, change the connection string per your MongoDB environment
-    client = pymongo.MongoClient('mongodb://localhost:27017/')
-    print(client)
-
-    # Set the db object to point to the business database
-    db = client['test_db']
-    collection = db['test_collection']
-
-    dictionary = {'name': 'Test Name', 'age': 30, 'created_at': datetime.datetime.utcnow()}
-    collection.insert_one(dictionary)
-
-    # Showcasing the count() method of find, count the total number of documents in collection
-    print('Total number of documents in collection: ', collection.count_documents({}))
-
 # home function
 def home(request):
     try:
@@ -65,7 +50,7 @@ def login(request):
             userDetail = UserModel.objects.get(email=request.POST.get('email'))
             if check_password(request.POST.get('password'), (userDetail.password)):
                 request.session['email'] = userDetail.email
-                print('Logged in successfully...!')
+                # print('Logged in successfully...!')
                 return redirect('../')
             else:
                 messages.error(request, 'Password incorrect...!')
@@ -214,17 +199,51 @@ def transferPoint(request):
         return redirect('login')
 
 
-def favourite(request, id):
+def feedback(request):
     try:
         user = UserModel.objects.get(email=request.session['email'])
-        post = PostModel.objects.get(id=id)
-        if post.isFavourite(user.id):
-            post.removeFavourite(user.id)
-            messages.success(request, "Post removed from favourite list.")
-        else:
-            post.addFavourite(user.id)
-            messages.success(request, "Post added to favourite list.")
-        return redirect('/')
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getSendedPoint(%s)', [user.email])
+        sended = cursor.fetchall()[0][0]
+        if sended is None:
+            sended = 0
+        cursor.close()
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getReceivedPoint(%s)', [user.email])
+        received = cursor.fetchall()[0][0]
+        if received is None:
+            received = 0
+        cursor.close()
+        #
+        # Connect to the MongoDB, change the connection string per your MongoDB environment
+        client = pymongo.MongoClient('mongodb://localhost:27017/')
+        print(client)
+
+        # Set the db object to point to the business database
+        db = client['blogger_spirit']
+        collection = db['user_feedbacks']
+
+        # Showcasing the count() method of find, count the total number of documents in collection
+        # print('Total number of documents in collection: ', collection.count_documents({}))
+        cursor = collection.find({})
+        feedbacks = [document for document in cursor]
+        # print(feedbacks)
+        # print('Total number of documents in collection: ', len(feedbacks))
+        #
+        if request.method == 'POST':
+            if request.POST.get('email') and request.POST.get('feedback'):
+                #
+                email = request.POST.get('email')
+                feedback = request.POST.get('feedback')
+                now = datetime.datetime.utcnow()
+                dictionary = {'email': email, 'feedback': feedback, 'created_at': now}
+                collection.insert_one(dictionary)
+                messages.success(request, "Feedback saved successfully...!")
+                return redirect('/')
+        
+        return render(request, 'feedback.html', {'user': user, 'sended': sended, 'received': received, 'feedbacks': feedbacks})
     except:
         messages.error(request, 'You need to login first')
         return redirect('login')

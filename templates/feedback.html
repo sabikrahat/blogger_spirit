@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% extends 'index.html' %}
+{% block title %}Feedback - Blogger Spirit{% endblock %}
+{% block content %}
+{% load static %}
+
+<div class="container" style="margin-top: 5em; margin-bottom: 5em;">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <form method="POST">
+                {% csrf_token %}
+                <br>
+                <div class="form-group">
+                    <label for="senderInputEmail">Email address</label>
+                    <input type="email" class="form-control" id="senderInputEmail" aria-describedby="emailHelpSender"
+                        placeholder="Enter email" value="{{user.email}}" readonly required name="email">
+                    <small id="emailHelpSender" class="form-text text-muted">Your email address. Automatically
+                        received!</small>
+                </div>
+                <br>
+                <div class="form-group">
+                    <label for="receiverInputEmail">Feedback</label>
+                    <input type="text" class="form-control" id="receiverInputEmail" name="feedback"
+                        aria-describedby="emailHelpReceiver" placeholder="Enter Feedback" required>
+                    <small id="emailHelpReceiver" class="form-text text-muted">Your feedback matters a lot.</small>
+                </div>
+                <br>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <div class="col-2"></div>
+    </div>
+</div>
+<br>
+<hr>
+<h3>Previous Feedbacks</h3>
+<hr>
+{% if feedbacks|length %}
+{% for feedback in feedbacks %}
+<div class="card" style="margin-bottom: 1em; background-color: bisque; padding: 0.5em;">
+    <h4>{{feedback.email}}</h4>
+    <p style="text-align: justify;">{{feedback.feedback}}</p>
+</div>
+
+{% endfor %}
+{% else %}
+<div class="custom-center">
+    <br>
+    <h5> Sorry! No feedbacks to show.</h5>
+</div>
+{% endif %}
+
+{% endblock %}
