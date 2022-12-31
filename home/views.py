@@ -213,3 +213,18 @@ def transferPoint(request):
         messages.error(request, 'You need to login first')
         return redirect('login')
 
+
+def favourite(request, id):
+    try:
+        user = UserModel.objects.get(email=request.session['email'])
+        post = PostModel.objects.get(id=id)
+        if post.isFavourite(user.id):
+            post.removeFavourite(user.id)
+            messages.success(request, "Post removed from favourite list.")
+        else:
+            post.addFavourite(user.id)
+            messages.success(request, "Post added to favourite list.")
+        return redirect('/')
+    except:
+        messages.error(request, 'You need to login first')
+        return redirect('login')

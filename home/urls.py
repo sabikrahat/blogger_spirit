@@ -11,4 +11,5 @@ urlpatterns = [
     path('terms-and-conditions', views.terms, name='terms-and-conditions'),
     path('write-post', views.writePost, name='write-post'),
     path('transfer-point', views.transferPoint, name='transfer-point'),
+    path('favourite', views.favourite, name='favourite'),
 ]
