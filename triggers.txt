@@ -2,7 +2,7 @@
 -- insert into post table
 -- 1
 DELIMITER $$ 
-CREATE TRIGGER check_user_points_while_post
+CREATE OR REPLACE TRIGGER check_user_points_while_post
     BEFORE
         INSERT ON app_posts 
     FOR EACH ROW 
@@ -17,7 +17,7 @@ DELIMITER ;
 
 -- 2
 DELIMITER $$ 
-CREATE TRIGGER update_user_point
+CREATE OR REPLACE TRIGGER update_user_point
     AFTER
         INSERT ON app_posts
     FOR EACH ROW BEGIN
@@ -28,7 +28,7 @@ DELIMITER ;
 
 -- insert into transfer point table
 DELIMITER $$ 
-CREATE TRIGGER check_user_points_while_transferring
+CREATE OR REPLACE TRIGGER check_user_points_while_transferring
     BEFORE
         INSERT ON app_transfer_point 
     FOR EACH ROW 
@@ -41,3 +41,47 @@ CREATE TRIGGER check_user_points_while_transferring
     END $$ 
 DELIMITER ;
 
+
+
+-- Procedure
+
+CREATE OR REPLACE PROCEDURE getPosts(IN userId BIGINT) 
+NOT DETERMINISTIC CONTAINS SQL 
+SQL SECURITY DEFINER 
+SELECT ap.title, ap.description, ap.img as postImg, ap.created_at as postedAt, au.name, au.email, au.img as userImg
+FROM app_posts ap, app_users au 
+WHERE ap.publisherId = au.id and ap.publisherId != userId;
+
+
+CREATE PROCEDURE getPostById(IN postId BIGINT)
+NOT DETERMINISTIC CONTAINS SQL
+SQL SECURITY DEFINER
+SELECT ap.title, ap.description, ap.img as postImg, ap.created_at as postedAt, au.name, au.email, au.img as userImg
+FROM app_posts ap, app_users au
+WHERE ap.publisherId = au.id and ap.id != postId;
+
+
+-- Function
+
+-- 1 to get total point sended by user
+
+CREATE OR REPLACE FUNCTION getSendedPoint(userEmail VARCHAR(40))
+RETURNS INT NOT DETERMINISTIC CONTAINS SQL
+SQL SECURITY DEFINER 
+RETURN (
+    SELECT SUM(point) as total_sended_point
+    FROM app_transfer_point
+    WHERE senderEmail = userEmail
+);
+
+
+-- 2 to get total point received by user
+
+CREATE OR REPLACE FUNCTION getReceivedPoint(userEmail VARCHAR(40))
+RETURNS INT NOT DETERMINISTIC CONTAINS SQL
+SQL SECURITY DEFINER 
+RETURN (
+    SELECT SUM(point) as total_received_point
+    FROM app_transfer_point
+    WHERE receiverEmail = userEmail
+);

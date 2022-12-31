@@ -24,54 +24,59 @@ def mongoDBConnect():
     # Showcasing the count() method of find, count the total number of documents in collection
     print('Total number of documents in collection: ', collection.count_documents({}))
 
-
+# home function
 def home(request):
     try:
         user = UserModel.objects.get(email=request.session['email'])
         posts = PostModel.objects.all()
         print(posts)
-        return render(request, 'home.html', {'posts': posts, 'user': user})
+        return render(request, 'home.html', {'user': user})
     except:
         messages.error(request, 'You need to login first')
-        return redirect('login')
-    
+        return redirect('../authentication')
 
+# authentication function
+def authentication(request):
+    return render(request, 'authentication.html')
+    
+# login function
 def login(request):
     if request.method == 'POST':
         try:
             userDetail = UserModel.objects.get(email=request.POST.get('email'))
             if check_password(request.POST.get('password'), (userDetail.password)):
                 request.session['email'] = userDetail.email
-                return redirect('/')
+                print('Logged in successfully...!')
+                return redirect('../')
             else:
                 messages.error(request, 'Password incorrect...!')
         except UserModel.DoesNotExist as e:
             messages.error(request, 'No user found of this email....!')
+    return redirect('../authentication')
 
-    return render(request, 'login.html')
-
-def register(request):
+# signup function
+def signup(request):
     if request.method == 'POST':
-        if request.POST.get('name') and request.POST.get('email') and request.POST.get('password') and request.POST.get('phone'):
+        if request.POST.get('name') and request.POST.get('email') and request.POST.get('password'):
 
             userModel = UserModel()
             userModel.name = request.POST.get('name')
             userModel.email = request.POST.get('email')
             userModel.password = make_password(request.POST.get('password'))
-            userModel.phone = request.POST.get('phone')
 
             if len(request.FILES) != 0:
                 userModel.img = request.FILES['image']
 
             if userModel.isExists():
-                messages.error(request, "Email address already registered!")
-                return render(request, 'register.html')
+                messages.error(
+                    request, request.POST.get('email') + " email address already registered...! Please Log in.")
+                return redirect('../authentication')
             else:
                 userModel.save()
-                messages.success(request, "Registration details saved successfully...! Please Log in now.")
-                return render(request, 'register.html')
-
-    return render(request, 'register.html')
+                messages.success(request, "Hello " + request.POST.get('name') + ", registration details saved successfully...! Please Log in now.")
+                return redirect('../authentication')
+    else:
+        return redirect('../authentication')
 
 
 def logout(request):
@@ -80,8 +85,8 @@ def logout(request):
         messages.success(request, "Successfully logged out.")
     except:
         messages.error(request, "An error occurred. Try again.")
-        return redirect('login')
-    return redirect('login')
+        return redirect('authentication')
+    return redirect('authentication')
 
 def privacy(request):
     return render(request, 'privacy-policy.html')
