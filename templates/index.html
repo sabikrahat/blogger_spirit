@@ -18,10 +18,11 @@
     <!-- Title -->
     <title>{% block title %}{% endblock %}</title>
 
+    <link rel="stylesheet" href="{% static 'css/default.css' %}">
+
 </head>
 
 <body>
-
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid" style="margin-left: 1em; margin-right: 1em;">
@@ -46,27 +47,15 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'transfer-point' %}">Transfer Point</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{% url 'authentication' %}">Authentication</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
-                        </ul>
-                    </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled">Disabled</a>
+                        <a class="nav-link" href="{% url 'logout' %}">Log out</a>
                     </li>
                 </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
+                <div class="d-flex" style="padding-top: 0.5em;">
+                    <h6 style="color: blue;">Point: {{user.point}}</h6>
+                    <h6 style="color: red;"> &ensp; Transfered: {{sended}}</h6>
+                    <h6 style="color: green;"> &ensp; Received: {{received}}</h6>
+                </div>
             </div>
         </div>
     </nav>

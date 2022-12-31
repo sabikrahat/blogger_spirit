@@ -12,6 +12,20 @@
     </div>
 </div>
 <hr>
+{% if messages %}
+{% for result in messages %}
+{% if result.tags == "error" %}
+<div class="alert alert-danger">
+    {{ result }}
+</div>
+{% else %}
+<div class="alert alert-success">
+    {{ result }}
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+<!-- Carousel -->
 <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-indicators">
         <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
@@ -44,5 +58,44 @@
     </button>
 </div>
 
-
+<!-- main content -->
+<br>
+<br>
+{% if posts|length %}
+{% for post in posts %}
+<div class="col">
+    <div class="row">
+        <div class="col-8">
+            <img src="{{post.6}}" height="60px" width="60px"
+                style="border: 3px solid lightblue; padding: 0.1em; border-radius: 50%;" alt="user image" /><b
+                style="font-size: 18px;">&ensp;{{post.4}}</b>
+        </div>
+        <div class="col-2"></div>
+        <div class="col-2">{{post.3}}</div>
+    </div>
+    <p> </p>
+    <img src="{{post.2}}" class="img-thumbnail" alt="blog-image" style="width: 100%; height: 500px fit-content" />
+    <br>
+    <br>
+    <div class="row">
+        <div class="col-10">
+            <h3>{{post.0}}</h3>
+        </div>
+        <div class="col-2">
+            <button type="button" class="btn btn-outline-primary"
+                onclick="location.href='/view-question/{{post.1}}/'">&ensp;&ensp;Purchase&ensp;&ensp;</button>
+        </div>
+    </div>
+    <br>
+    <p style="text-align: justify;">{{post.1}}</p>
+    <hr>
+    <br>
+</div>
+{% endfor %}
+{% else %}
+<div class="custom-center">
+    <br>
+    <h5> Sorry! No blogs to show.</h5>
+</div>
+{% endif %}
 {% endblock %}

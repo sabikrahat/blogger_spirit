@@ -6,6 +6,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from home.models import PostModel, TransferPoint, UserModel
 from django.db import transaction
+from django.db import connection
 
 # Create your views here.
 
@@ -28,9 +29,27 @@ def mongoDBConnect():
 def home(request):
     try:
         user = UserModel.objects.get(email=request.session['email'])
-        posts = PostModel.objects.all()
-        print(posts)
-        return render(request, 'home.html', {'user': user})
+        #
+        cursor = connection.cursor()
+        cursor.execute('CALL getPosts()')
+        posts = cursor.fetchall()
+        cursor.close()
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getSendedPoint(%s)', [user.email])
+        sended = cursor.fetchall()[0][0]
+        if sended is None:
+            sended = 0
+        cursor.close()
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getReceivedPoint(%s)', [user.email])
+        received = cursor.fetchall()[0][0]
+        if received is None:
+            received = 0
+        cursor.close()
+        #
+        return render(request, 'home.html', {'user': user, 'posts': posts, 'sended': sended, 'received': received})
     except:
         messages.error(request, 'You need to login first')
         return redirect('../authentication')
@@ -97,6 +116,21 @@ def terms(request):
 def writePost(request):
     try:
         user = UserModel.objects.get(email=request.session['email'])
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getSendedPoint(%s)', [user.email])
+        sended = cursor.fetchall()[0][0]
+        if sended is None:
+            sended = 0
+        cursor.close()
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getReceivedPoint(%s)', [user.email])
+        received = cursor.fetchall()[0][0]
+        if received is None:
+            received = 0
+        cursor.close()
+        #
         if request.method == 'POST':
             if request.POST.get('title') and request.POST.get('description'):
                 postModel = PostModel()
@@ -112,13 +146,13 @@ def writePost(request):
                 except Exception as e:
                     print(e)
                     messages.error(request, "An error occurred. " + str(e))
-                    return render(request, 'write-post.html')
+                    return render(request, 'write-post.html', {'user': user, 'sended': sended, 'received': received})
 
                 messages.success(request, "Post saved successfully...!")
-                return render(request, 'write-post.html')
+                return redirect('/')
         
         else:
-            return render(request, 'write-post.html')
+            return render(request, 'write-post.html', {'user': user, 'sended': sended, 'received': received})
     except:
         messages.error(request, 'You need to login first')
         return redirect('login')
@@ -127,6 +161,21 @@ def writePost(request):
 def transferPoint(request):
     try:
         user = UserModel.objects.get(email=request.session['email'])
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getSendedPoint(%s)', [user.email])
+        sended = cursor.fetchall()[0][0]
+        if sended is None:
+            sended = 0
+        cursor.close()
+        #
+        cursor = connection.cursor()
+        cursor.execute('SELECT getReceivedPoint(%s)', [user.email])
+        received = cursor.fetchall()[0][0]
+        if received is None:
+            received = 0
+        cursor.close()
+        #
 
         if request.method == 'POST':
             if request.POST.get('email') and request.POST.get('point'):
@@ -156,9 +205,9 @@ def transferPoint(request):
                         messages.error(request, "An error occurred. " + str(e))
                         return render(request, 'transfer-point.html', {'user': user})
                     messages.success(request, "Point transfered successfully...!", {'user': user})
-                    return render(request, 'transfer-point.html')
+                    return redirect('/')
         else:
-            return render(request, 'transfer-point.html', {'user': user})
+            return render(request, 'transfer-point.html', {'user': user, 'sended': sended, 'received': received})
 
     except:
         messages.error(request, 'You need to login first')

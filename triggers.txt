@@ -17,7 +17,7 @@ DELIMITER ;
 
 -- 2
 DELIMITER $$ 
-CREATE OR REPLACE TRIGGER update_user_point
+CREATE OR REPLACE TRIGGER update_user_point_after_post
     AFTER
         INSERT ON app_posts
     FOR EACH ROW BEGIN
@@ -45,15 +45,25 @@ DELIMITER ;
 
 -- Procedure
 
-CREATE OR REPLACE PROCEDURE getPosts(IN userId BIGINT) 
+CREATE OR REPLACE PROCEDURE getPosts()
 NOT DETERMINISTIC CONTAINS SQL 
 SQL SECURITY DEFINER 
 SELECT ap.title, ap.description, ap.img as postImg, ap.created_at as postedAt, au.name, au.email, au.img as userImg
 FROM app_posts ap, app_users au 
-WHERE ap.publisherId = au.id and ap.publisherId != userId;
+WHERE ap.publisherId = au.id
+ORDER BY ap.id DESC;
 
 
-CREATE PROCEDURE getPostById(IN postId BIGINT)
+CREATE OR REPLACE PROCEDURE getUserPosts(IN userId BIGINT) 
+NOT DETERMINISTIC CONTAINS SQL 
+SQL SECURITY DEFINER 
+SELECT ap.title, ap.description, ap.img as postImg, ap.created_at as postedAt, au.name, au.email, au.img as userImg
+FROM app_posts ap, app_users au 
+WHERE ap.publisherId = au.id and ap.publisherId = userId
+ORDER BY ap.id DESC;
+
+
+CREATE OR REPLACE PROCEDURE getPostById(IN postId BIGINT)
 NOT DETERMINISTIC CONTAINS SQL
 SQL SECURITY DEFINER
 SELECT ap.title, ap.description, ap.img as postImg, ap.created_at as postedAt, au.name, au.email, au.img as userImg
